@@ -12,6 +12,10 @@ module.exports = class Controller {
     return costs
   }
 
+  getFriends() {
+    return this.options.friends || []
+  }
+
   getMinWorkers() {
     return this.options.minWorkers || 10
   }
@@ -21,21 +25,32 @@ module.exports = class Controller {
   }
 
   getWorkerTask(id, creep) {
+
+// return roleWorker.activities.HARVEST
+
     let len = roleWorker.getAll().length
     let neededEnergy = len < this.getMinWorkers() ? (this.getMinWorkers() - len) * this.getSkillCosts(this.getWorkersSkills()) : 0
     let energy = creep.room.energyAvailable
     let constructionSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES).length
-    let repairables = creep.room.find(FIND_MY_STRUCTURES).filter(structure => structure.hits < structure.hitsMax && structure.hits < 2000).length // TODO: repairlimits
+    console.log(constructionSites)
 
     let i = Math.round(id/len*100)
-    if      (i < 50)  return roleWorker.activities.HARVEST //50% HARVEST
-    else if (i < 70)  return (neededEnergy > energy) ? roleWorker.activities.HARVEST : roleWorker.activities.UPGRADE //20% UPGRADE || energy needed to spawn => 20% HARVEST
-    else {
-      if (neededEnergy > energy) return roleWorker.activities.HARVEST //energy needed to spawn => 30% HARVEST
-      if (repairables + constructionSites === 0) return i%2==0 ? roleWorker.activities.HARVEST : roleWorker.activities.UPGRADE //no constructionSites or structures to repair => 15% HARVEST + 15% UPGRADE
-      let shareConstructionSites = constructionSites / (constructionSites + repairables)
-      if (i < (70 + shareConstructionSites * 30)) return roleWorker.activities.BUILD //20 constructionSites + 10 structures to repair => 20% BUILD + 10% REPAIR
-      return roleWorker.activities.REPAIR
+
+    if (i < 50) {                                       //  50%
+      return roleWorker.activities.HARVEST              //    HARVEST
+    } else if (i < 70) {                                //  20%
+      if (neededEnergy > energy)                        //    not enough energy
+        return roleWorker.activities.HARVEST            //      HARVEST
+      else                                              //    enough engergy
+        return roleWorker.activities.UPGRADE            //      UPGRADE
+    } else {                                            //  30%
+      if (neededEnergy > energy)                        //    not enough energy
+        return roleWorker.activities.HARVEST            //      HARVEST
+      else if (constructionSites > 0)                   //    constructionSite available
+        return roleWorker.activities.BUILD              //      BUILD
+      else                                              //    no constructionSite available
+        return i%2==0 ? roleWorker.activities.UPGRADE   //      UPGRADE
+                      : roleWorker.activities.HARVEST   //      HARVEST
     }
 
   }

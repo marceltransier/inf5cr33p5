@@ -2,8 +2,7 @@ module.exports = {
   activities: {
     HARVEST: 'harvest',
     UPGRADE: 'upgrade',
-    BUILD: 'build',
-    REPAIR: 'repair'
+    BUILD: 'build'
   },
   getAll: () => Object.values(Game.creeps).filter(creep => creep.memory.role === 'worker'),
   spawn: () => controller.getSpawn().spawnCreep(controller.getWorkersSkills(), 'Worker' + Game.time, {memory: {role: 'worker'}}),
@@ -60,31 +59,17 @@ module.exports = {
         if (constructionSite === null) return creep.memory.activity = false
         if(creep.build(constructionSite) == ERR_NOT_IN_RANGE) creep.moveTo(constructionSite, {visualizePathStyle: {stroke: '#0000ff'}})
       }
-    },
-    'repair': {
-      charge: (creep) => {
-        roleWorker.withdrawCreep(creep)
-      },
-      use: (creep) => {
-        let structure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-          filter: (structure) => {
-            return (structure.hits < structure.hitsMax && structure.hits < 2000) // TODO: repairlimits
-          }
-        })
-        if (structure === null) return creep.memory.activity = false
-        if (creep.repair(structure) == ERR_NOT_IN_RANGE) creep.moveTo(structure, {visualizePathStyle: {stroke: '#0000ff'}})
-      }
     }
   },
   run: () => {
-    console.log('run')
+    // console.log('run')
     if (roleWorker.getAll().length < controller.getMinWorkers()) roleWorker.spawn()
     let creeps = roleWorker.getAll()
     for (id in creeps) {
       let creep = creeps[id]
-      console.log(id, creep.name)
+      // console.log(id, creep.name)
       if (!creep.memory.activity) creep.memory.activity = controller.getWorkerTask(id, creep)
-      console.log(creep.memory.activity, creep.memory.charging)
+      // console.log(creep.memory.activity, creep.memory.charging)
       if (creep.memory.charging) {
         if (roleWorker.tasks[creep.memory.activity].charge) roleWorker.tasks[creep.memory.activity].charge(creep)
 
@@ -97,7 +82,7 @@ module.exports = {
         if (roleWorker.tasks[creep.memory.activity].use) roleWorker.tasks[creep.memory.activity].use(creep)
         if (creep.carry.energy === 0) {
           creep.memory.charging = true
-          if (roleWorker.tasks[creep.memory.activity].used) {//TODO: cannot read property used of undefined. aber creep.memory.activity = harvest 
+          if (roleWorker.tasks[creep.memory.activity].used) {//TODO: cannot read property used of undefined. aber creep.memory.activity = harvest
             roleWorker.tasks[creep.memory.activity].used(creep)
             creep.memory.activity = false
           }
