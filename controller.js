@@ -99,15 +99,21 @@ module.exports = class Controller {
 
 
 
-  claimSource(pos) {
-    let room = Game.rooms[pos.roomName]
-    let sources = room.find(FIND_SOURCES_ACTIVE)
-    let distances = sources.map(source => {
-      let add = this.claimedSources[source.id] || 0
-      return {distance: pos.findPathTo(source).length + (add * 20), source: source}
-    })
-    let source = (distances.sort((a, b) => a.distance - b.distance)[0] || {}).source
-    if (!source) return
+  getSource(creep) {
+    // let room = Game.rooms[pos.roomName]
+    // let sources = room.find(FIND_SOURCES_ACTIVE)
+    // let distances = sources.map(source => {
+    //   let add = this.claimedSources[source.id] || 0
+    //   return {distance: pos.findPathTo(source).length + (add * 20), source: source}
+    // })
+    // let source = (distances.sort((a, b) => a.distance - b.distance)[0] || {}).source
+    // if (!source) return
+    // this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
+    // return source
+    let sources = creep.room.find(FIND_SOURCES_ACTIVE)
+    if (!sources.length) return
+    let distances = sources.map(source => ({distance: creep.pos.findPathTo(source).length + ((this.claimedSources[source.id] || 0) * 20), source: source}))
+    let source = distances.sort((a, b) => a.distance - b.distance)[0].source
     this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
     return source
   }

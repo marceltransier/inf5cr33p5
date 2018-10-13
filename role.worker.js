@@ -10,7 +10,7 @@ module.exports = {
     let energyStorage = creep.pos.findClosestByPath(FIND_STRUCTURES, {
       filter: (structure) => {
         return (structure.structureType === STRUCTURE_EXTENSION ||
-          structure.structureType === STRUCTURE_SPAWN) && structure.energy > 20;
+          structure.structureType === STRUCTURE_SPAWN) && structure.energy > 2
       }
     })
     if (energyStorage === null) return creep.memory.activity = false
@@ -19,19 +19,25 @@ module.exports = {
   tasks: {
     'harvest': {
       charge: (creep) => {
-        let sourceId = creep.memory.srcid
-        let source = sourceId ? Game.getObjectById(sourceId) : controller.claimSource(creep.pos)
-        if (!source) return
-        creep.memory.srcid = source.id
-        if(creep.harvest(source) === ERR_NOT_IN_RANGE) {
-            creep.moveTo(source, {visualizePathStyle: {stroke: '#ff00ff'}});
+        let sourceId = creep.memory.sourceId
+        let source = sourceId ? Game.getObjectById(sourceId) : controller.getSource(creep)
+        if (source) {
+          creep.memory.sourceId = source.id
+          let res = creep.harvest(source)
+          if (res === ERR_NOT_IN_RANGE) creep.moveTo(source, {visualizePathStyle: {stroke: '#ff00ff'}})
+          if (res === ERR_NOT_ENOUGH_ENERGY) delete creep.memory.sourceId
+        } else {
+          if (creep.room.name === 'E1N14') creep.moveTo(new RoomPosition(25, 25, 'E1N13'), {visualizePathStyle: {stroke: '#ff00ff'}})
+          else creep.moveTo(new RoomPosition(0, 0, 'E1N14'))
         }
+
       },
       charged: (creep) => {
-        controller.releaseSource(creep.memory.srcid)
-        creep.memory.srcid = false
+        controller.releaseSource(creep.memory.sourceId)
+        delete creep.memory.sourceId
       },
       use: (creep) => {
+        if (creep.room.name !== 'E1N14') return creep.moveTo(new RoomPosition(25, 25, 'E1N14'), {visualizePathStyle: {stroke: '#ff00ff'}})
         let energyStorage = controller.getEnergyStorageToTransfer(creep)
         if (energyStorage === null) return creep.memory.activity = false //zyklus beenden => neue aufgabe vom controller
         if (creep.transfer(energyStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(energyStorage, {visualizePathStyle: {stroke: '#ff00ff'}})
@@ -42,7 +48,7 @@ module.exports = {
         roleWorker.withdrawCreep(creep)
       },
       use: (creep) => {
-        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}});
+        if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}})
       }
     },
     'build': {

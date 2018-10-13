@@ -7,8 +7,8 @@ global.controller = new Controller({
   workersSkills: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
   friends: ['M4RC3L', 'RaisingAgent', 'Gnamly', 'GhostDog'],
   repairLimits: {
-    constructedWall: 2000,
-    rampart: 5000
+    constructedWall: 20000,
+    rampart: 10000
   }
 })
 
