@@ -14,13 +14,14 @@ module.exports = {
       }
     })
     if (energyStorage === null) return creep.memory.activity = false
-    if (creep.withdraw(energyStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(energyStorage, {visualizePathStyle: {stroke: '#ebff00'}})
+    if (creep.withdraw(energyStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(energyStorage, {visualizePathStyle: {stroke: '#ebff00'}}) //controller fragen, bevor du energie klaust.
   },
   tasks: {
     'harvest': {
       charge: (creep) => {
         let sourceId = creep.memory.srcid
         let source = sourceId ? Game.getObjectById(sourceId) : controller.claimSource(creep.pos)
+        if (!source) return
         creep.memory.srcid = source.id
         if(creep.harvest(source) === ERR_NOT_IN_RANGE) {
             creep.moveTo(source, {visualizePathStyle: {stroke: '#ff00ff'}});
@@ -31,13 +32,7 @@ module.exports = {
         creep.memory.srcid = false
       },
       use: (creep) => {
-        let energyStorage = creep.pos.findClosestByPath(FIND_STRUCTURES, {//TODO: merken und mit isnear überprüfen. (high cpu costs)
-          filter: (structure) => {
-            return (structure.structureType === STRUCTURE_EXTENSION ||
-              structure.structureType === STRUCTURE_SPAWN ||
-              structure.structureType === STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
-          }
-        })
+        let energyStorage = controller.getEnergyStorageToTransfer(creep)
         if (energyStorage === null) return creep.memory.activity = false //zyklus beenden => neue aufgabe vom controller
         if (creep.transfer(energyStorage, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(energyStorage, {visualizePathStyle: {stroke: '#ff00ff'}})
       }
@@ -56,7 +51,7 @@ module.exports = {
       },
       use: (creep) => {
         let constructionSite = creep.pos.findClosestByPath(FIND_MY_CONSTRUCTION_SITES)
-        if (constructionSite === null) return creep.memory.activity = false
+        if (constructionSite === null) return creep.memory.activity = controller.getWorkerTask(creep)
         if(creep.build(constructionSite) == ERR_NOT_IN_RANGE) creep.moveTo(constructionSite, {visualizePathStyle: {stroke: '#0000ff'}})
       }
     }
@@ -68,7 +63,7 @@ module.exports = {
     for (id in creeps) {
       let creep = creeps[id]
       // console.log(id, creep.name)
-      if (!creep.memory.activity) creep.memory.activity = controller.getWorkerTask(id, creep)
+      if (!creep.memory.activity) creep.memory.activity = controller.getWorkerTask(creep)
       // console.log(creep.memory.activity, creep.memory.charging)
       if (creep.memory.charging) {
         if (roleWorker.tasks[creep.memory.activity].charge) roleWorker.tasks[creep.memory.activity].charge(creep)
@@ -82,9 +77,9 @@ module.exports = {
         if (roleWorker.tasks[creep.memory.activity].use) roleWorker.tasks[creep.memory.activity].use(creep)
         if (creep.carry.energy === 0) {
           creep.memory.charging = true
+          creep.memory.activity = controller.getWorkerTask(creep)
           if (roleWorker.tasks[creep.memory.activity].used) {//TODO: cannot read property used of undefined. aber creep.memory.activity = harvest
             roleWorker.tasks[creep.memory.activity].used(creep)
-            creep.memory.activity = false
           }
         }
       }

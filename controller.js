@@ -24,35 +24,72 @@ module.exports = class Controller {
     return this.options.workersSkills || [WORK, CARRY, MOVE]
   }
 
-  getWorkerTask(id, creep) {
+  getRepairLimits() {
+    return this.options.repairLimits || {}
+  }
 
-// return roleWorker.activities.HARVEST
+  getNeededEnergy(room) {
+    let workers = roleWorker.getAll()
+    let minWorkers = this.getMinWorkers()
+    let neededEnergy = workers.length < minWorkers ? (minWorkers - workers.length) * this.getSkillCosts(this.getWorkersSkills()) : 0
 
+    for (let tower of room.find(FIND_MY_STRUCTURES, {filter: structure => structure.structureType === STRUCTURE_TOWER})) {
+      if (tower.energy < tower.energyCapacity * .7) neededEnergy += tower.energyCapacity * .8 - tower.energy
+    }
+
+    if (Game.flags['here']) neededEnergy += 1300
+
+    return neededEnergy
+  }
+
+  isEnergyNeeded(room) {
+    let energy = room.energyAvailable
+    let neededEnergy = this.getNeededEnergy(room)
+    return energy < neededEnergy
+  }
+
+  getWorkerTask(creep) {
+    let workers = roleWorker.getAll()
+    let minWorkers = this.getMinWorkers()
+
+    let energyNeeded = this.isEnergyNeeded(creep.room)
+
+    let constructionSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES).length
+    let ids = workers.map(creep => parseInt(creep.id, 16)).sort((a, b) => a-b)
+    let id = parseInt(creep.id, 16)
+    let index = ids.indexOf(id)
+    let i = (index+1) / ids.length
+
+    if (i <= .5) return roleWorker.activities.HARVEST
+    else if (i <= .7) {
+      if (energyNeeded)
+        return roleWorker.activities.HARVEST
+      else
+        return roleWorker.activities.UPGRADE
+    } else {
+      if (energyNeeded)
+        return roleWorker.activities.HARVEST
+      else if (constructionSites > 0)
+        return roleWorker.activities.BUILD
+      else
+        return index%2==0 ? roleWorker.activities.UPGRADE
+                          : roleWorker.activities.HARVEST
+    }
+  }
+
+
+
+  getEnergyStorageToTransfer(creep) {
     let len = roleWorker.getAll().length
     let neededEnergy = len < this.getMinWorkers() ? (this.getMinWorkers() - len) * this.getSkillCosts(this.getWorkersSkills()) : 0
     let energy = creep.room.energyAvailable
-    let constructionSites = creep.room.find(FIND_MY_CONSTRUCTION_SITES).length
-    console.log(constructionSites)
-
-    let i = Math.round(id/len*100)
-
-    if (i < 50) {                                       //  50%
-      return roleWorker.activities.HARVEST              //    HARVEST
-    } else if (i < 70) {                                //  20%
-      if (neededEnergy > energy)                        //    not enough energy
-        return roleWorker.activities.HARVEST            //      HARVEST
-      else                                              //    enough engergy
-        return roleWorker.activities.UPGRADE            //      UPGRADE
-    } else {                                            //  30%
-      if (neededEnergy > energy)                        //    not enough energy
-        return roleWorker.activities.HARVEST            //      HARVEST
-      else if (constructionSites > 0)                   //    constructionSite available
-        return roleWorker.activities.BUILD              //      BUILD
-      else                                              //    no constructionSite available
-        return i%2==0 ? roleWorker.activities.UPGRADE   //      UPGRADE
-                      : roleWorker.activities.HARVEST   //      HARVEST
-    }
-
+    return creep.pos.findClosestByPath(FIND_STRUCTURES, {//TODO: merken und mit isnear überprüfen. (high cpu costs)
+      filter: (structure) => {
+        return (structure.structureType === STRUCTURE_EXTENSION ||
+          structure.structureType === STRUCTURE_SPAWN ||
+          (structure.structureType === STRUCTURE_TOWER && (this.isEnergyNeeded(structure.room) || structure.energy < structure.energyCapacity * .7))) && structure.energy < structure.energyCapacity
+      }
+    })
   }
 
   getSpawn() {
@@ -69,7 +106,8 @@ module.exports = class Controller {
       let add = this.claimedSources[source.id] || 0
       return {distance: pos.findPathTo(source).length + (add * 20), source: source}
     })
-    let source = distances.sort((a, b) => a.distance - b.distance)[0].source
+    let source = (distances.sort((a, b) => a.distance - b.distance)[0] || {}).source
+    if (!source) return
     this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
     return source
   }

@@ -4,20 +4,13 @@ global.roleWarrior = require('role.warrior')
 global.roleTower = require('role.tower')
 global.controller = new Controller({
   minWorkers: 20,
-  workersSkills: [WORK, WORK, WORK, CARRY, CARRY, CARRY, MOVE, MOVE],
-  friends: ['M4RC3L', 'RaisingAgent', 'Gnamly', 'GhostDog'], //COMMING SOON
+  workersSkills: [WORK, WORK, WORK, CARRY, CARRY, CARRY, CARRY, MOVE, MOVE, MOVE, MOVE],
+  friends: ['M4RC3L', 'RaisingAgent', 'Gnamly', 'GhostDog'],
   repairLimits: {
-    constructedWall: 1000 //COMMING SOON
+    constructedWall: 2000,
+    rampart: 20000
   }
 })
-/*
-TODO:
-tower
-  repair limit
-
-warrior
-  friends
-*/
 
 module.exports.loop = () => {
 
@@ -54,8 +47,8 @@ module.exports.loop = () => {
   //let the workers do their work
   roleWorker.run()
 
-  // roleWarrior.spawn()
-  // roleWarrior.run()
+  if (Game.flags['here']) roleWarrior.spawn()
+  roleWarrior.run()
 
 
   for (let room of Object.values(Game.rooms)) {
