@@ -7,7 +7,7 @@ module.exports = {//TODO 500 reserve engergy für angriff
       tower.attack(hostile)
     }
     else if (tower.energy > tower.energyCapacity * .6) {
-      let structure = tower.pos.findClosestByRange(FIND_STRUCTURES, {filter: s =>  s.hits < (s.hitsMax * .8) && s.hits < 20000 && ((!controller.getRepairLimits()[s.structureType]) || (controller.getRepairLimits()[s.structureType] < s.hits))})
+      let structure = tower.pos.findClosestByRange(FIND_STRUCTURES, {filter: s =>  s.hits < (s.hitsMax * .8) && ( (!controller.getRepairLimits()[s.structureType]) || (s.hits < controller.getRepairLimits()[s.structureType]) )})
       if (structure) tower.repair(structure)
     }
 

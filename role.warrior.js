@@ -1,5 +1,5 @@
 module.exports = {
-  spawn: () => Game.spawns['Spawn1'].spawnCreep([ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,ATTACK,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE,MOVE],  'warrior' + Game.time, {memory: {role: 'warrior'}}),
+  spawn: () => Game.spawns['Spawn1'].spawnCreep([ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE,ATTACK,MOVE],  'warrior' + Game.time, {memory: {role: 'warrior'}}),
   run: () => {
 
     let target = Game.getObjectById('5bbfcefcfb640a0a6e0b53c7')

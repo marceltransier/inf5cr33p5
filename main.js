@@ -8,7 +8,7 @@ global.controller = new Controller({
   friends: ['M4RC3L', 'RaisingAgent', 'Gnamly', 'GhostDog'],
   repairLimits: {
     constructedWall: 2000,
-    rampart: 20000
+    rampart: 5000
   }
 })
 
