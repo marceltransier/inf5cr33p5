@@ -12,7 +12,7 @@ module.exports = {
       }
       if (attackFlag) {
         let hostile = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: (creep) => {
-          if (controller.getFriends().includes(creep.owner)) return false
+          if (controller.getFriends().includes(creep.owner.username)) return false
           for (let bodyPart of creep.body) if (bodyPart.type === ATTACK) return true
           return false
         }})

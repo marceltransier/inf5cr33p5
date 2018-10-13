@@ -110,15 +110,19 @@ module.exports = class Controller {
     // if (!source) return
     // this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
     // return source
-    let sources = creep.room.find(FIND_SOURCES_ACTIVE)
-    if (!sources.length) return
-    let distances = sources.map(source => ({distance: creep.pos.findPathTo(source).length + ((this.claimedSources[source.id] || 0) * 20), source: source}))
-    let source = distances.sort((a, b) => a.distance - b.distance)[0].source
-    this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
-    return source
+
+    // let sources = creep.room.find(FIND_SOURCES_ACTIVE)
+    // if (!sources.length) return
+    // let distances = sources.map(source => ({distance: creep.pos.findPathTo(source).length + ((this.claimedSources[source.id] || 0) * 20), source: source}))
+    // let source = distances.sort((a, b) => a.distance - b.distance)[0].source
+    // this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
+    // return source
+
+    return creep.room.find(FIND_SOURCES_ACTIVE)[Math.floor(Math.random()*2)]
+
   }
   releaseSource(id) {
-    this.claimedSources[id] -= 1
+    // this.claimedSources[id] -= 1
   }
 
 }
