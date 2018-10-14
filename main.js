@@ -8,7 +8,7 @@ global.controller = new Controller({
   friends: ['M4RC3L', 'RaisingAgent', 'Gnamly', 'GhostDog'],
   repairLimits: {
     constructedWall: 20000,
-    rampart: 10000
+    rampart: 30000
   }
 })
 
@@ -16,10 +16,11 @@ module.exports.loop = () => {
 
   //clear dead memories
   for (let name in Memory.creeps) {
-      if (!Game.creeps[name]) {
-          delete Memory.creeps[name]
-          console.log('Clearing non-existing creep memory:', name)
-      }
+    if (!Game.creeps[name]) {
+      if(Memory.creeps[name].sourceId) global.controller.releaseSource(Memory.creeps[name].sourceId)
+      delete Memory.creeps[name]
+      console.log('Clearing non-existing creep memory:', name)
+    }
   }
 
   //update info text
@@ -43,6 +44,15 @@ module.exports.loop = () => {
   for (let spawn of Object.values(Game.spawns)) {
     if (spawn.spawning) spawn.room.visual.text(`🛠️ ${Game.creeps[spawn.spawning.name].memory.role}`, spawn.pos.x + 1, spawn.pos.y, {align: 'left', opacity: 1})
   }
+
+
+  //SAFEMODE
+  let spawn = Game.spawns['Spawn1']
+  let room = spawn.room
+  let controller = room.controller
+  if (!controller.safeMode && controller.safeModeAvailable && spawn.hits < 2500) controller.activateSafeMode()
+
+
 
   //let the workers do their work
   roleWorker.run()

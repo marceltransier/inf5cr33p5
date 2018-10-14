@@ -25,7 +25,7 @@ module.exports = {
           creep.memory.sourceId = source.id
           let res = creep.harvest(source)
           if (res === ERR_NOT_IN_RANGE) creep.moveTo(source, {visualizePathStyle: {stroke: '#ff00ff'}})
-          if (res === ERR_NOT_ENOUGH_ENERGY) delete creep.memory.sourceId
+          if (res === ERR_NOT_ENOUGH_ENERGY) roleWorker.tasks['harvest'].charged(creep)
         } else {
           if (creep.room.name === 'E1N14') creep.moveTo(new RoomPosition(25, 25, 'E1N13'), {visualizePathStyle: {stroke: '#ff00ff'}})
           else creep.moveTo(new RoomPosition(0, 0, 'E1N14'))
@@ -48,6 +48,7 @@ module.exports = {
         roleWorker.withdrawCreep(creep)
       },
       use: (creep) => {
+        if (creep.room.name !== 'E1N14') return creep.moveTo(new RoomPosition(25, 25, 'E1N14'), {visualizePathStyle: {stroke: '#ff00ff'}})
         if (creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#0000ff'}})
       }
     },

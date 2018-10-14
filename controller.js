@@ -118,11 +118,17 @@ module.exports = class Controller {
     // this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
     // return source
 
-    return creep.room.find(FIND_SOURCES_ACTIVE)[Math.floor(Math.random()*2)]
+    let source = creep.pos.findClosestByPath(FIND_SOURCES_ACTIVE, {filter: source => (this.claimedSources[source.id] || 0) < 4})
+    if (!source) return
+    this.claimedSources[source.id] = (this.claimedSources[source.id] || 0) + 1
+    return source
+
+
+    // return creep.room.find(FIND_SOURCES_ACTIVE)[Math.floor(Math.random()*2)]
 
   }
   releaseSource(id) {
-    // this.claimedSources[id] -= 1
+    this.claimedSources[id] -= 1
   }
 
 }

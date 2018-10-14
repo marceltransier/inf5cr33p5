@@ -7,9 +7,6 @@ module.exports = {
     let flag = Game.flags['here']
     let attackFlag = Game.flags['attack!']
     for (let creep of Object.values(Game.creeps).filter(creep => creep.memory.role === 'warrior')) {
-      if (flag) {
-        creep.moveTo(flag, {visualizePathStyle: {stroke: '#ff0000'}})
-      }
       if (attackFlag) {
         let hostile = creep.pos.findClosestByPath(FIND_HOSTILE_CREEPS, {filter: (creep) => {
           if (controller.getFriends().includes(creep.owner.username)) return false
@@ -18,6 +15,9 @@ module.exports = {
         }})
         if (hostile) if (creep.attack(hostile) === ERR_NOT_IN_RANGE) creep.moveTo(hostile, {visualizePathStyle: {stroke: '#ff0000'}})
         else if (creep.attack(target) === ERR_NOT_IN_RANGE) creep.moveTo(target, {visualizePathStyle: {stroke: '#ff0000'}})
+      }
+      else if (flag) {
+        creep.moveTo(flag, {visualizePathStyle: {stroke: '#ff0000'}})
       }
 
     }
